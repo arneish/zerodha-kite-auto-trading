@@ -11,9 +11,15 @@ import json
 class portfolioManager(object):
     def __init__(self):
         self.stockElement = None
+        self.stockElementTicker = []
+        self.maxIters = 100
+        self.tickerInterval = 1
+        self.maxNumOrders = 100
         self.timeout = 10
+        
         self.loadLoginDetails()
         self.launchDriver()
+        
 
     def getXpathElement(self, xpath):
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
@@ -60,45 +66,62 @@ class portfolioManager(object):
         except TimeoutException:
             print("Login Failue.")
     
-    def executeOrder(self, stockName='YESBANK', orderType='BUY', numUnits=2):
+    def executeOrder(self, orderType, numUnits=2):
         # try:
-        if (self.stockElement==None):
-            xpathMarketWatchNames = '//*[@id="app"]/div[2]/div[1]/div/div[2]/div/div/div/div/span[1]/span/span'
-            allMarketWatchStockElements = self.getAllXpathElements(xpathMarketWatchNames)
-            for stockElement_ in allMarketWatchStockElements:
-                if (stockElement_.text==stockName):
-                    self.stockElement = stockElement_
-                    break
-        hover = ActionChains(self.driver).move_to_element(self.stockElement)
-        hover.perform()
+        hoverOverStockName = ActionChains(self.driver).move_to_element(self.stockElement)
+        hoverOverStockName.perform()
         if (orderType=='BUY'):
             xpathStockElementBuyButton = '//*[@id="app"]/div[2]/div[1]/div/div[2]/div/div/div/span/button[1]'
-            StockElementBuyButton = self.getXpathElement(xpathStockElementBuyButton)
-            StockElementBuyButton.click()
-            misRadioButton = self.getXpathElement('//*[@value="MIS"]')
-            # ActionChains(self.driver).move_to_element(misRadioButton).perform()
-            misRadioButton.send_keys(Keys.SPACE)
-            # misRadioButton.click()
-            self.getXpathElement('//*[@value="MARKET"]').send_keys(Keys.SPACE)
-            self.getXpathElement('//*[@label="Qty."]').send_keys(numUnits)
+            self.getXpathElement(xpathStockElementBuyButton).click()
+            self.setOrderOptions(numUnits=numUnits)
             xpathBuyButton = '//*[@id="app"]/div[3]/div/form/div[3]/div[3]/div[2]/button[1]'
-            # ActionChains(self.driver).move_to_element(self.getXpathElement(xpathBuyButton))
             # self.getXpathElement(xpathBuyButton).send_keys("\n")
-            xpathCancelButton = '//*[@id="app"]/div[3]/div/form/div[3]/div[3]/div[2]/button[2]'
-            # self.getXpathElement(xpathCancelButton).send_keys("\n")
         else:
             xpathStockElementSellButton = '//*[@id="app"]/div[2]/div[1]/div/div[2]/div/div/div/span/button[2]'
-        # if (orderType=='BUY'):
-
-            # else:
+            self.getXpathElement(xpathStockElementSellButton).click()
+            self.setOrderOptions(numUnits=numUnits)
+            xpathSellButton = '//*[@id="app"]/div[3]/div/form/div[3]/div[3]/div[2]/button[1]'
+            # self.getXpathElement(xpathSellButton).send_keys("\n")
+        hoverOverStockName.release()
         # except TimeoutException:
         #     print("Timeout Exception in Placing Order")
+    
+    def setOrderOptions(self, MIS=True, market=True, numUnits=1):
+        if (MIS):
+            misRadioButton = self.getXpathElement('//*[@value="MIS"]')
+            misRadioButton.send_keys(Keys.SPACE)
+        if (market):
+            self.getXpathElement('//*[@value="MARKET"]').send_keys(Keys.SPACE)
+        self.getXpathElement('//*[@label="Qty."]').send_keys(numUnits)
+
+    def executeStrategyOne(self, stockName='YESBANK'):
+        if (self.stockElement==None):
+            xpathMarketWatchNames = '//*[@id="app"]/div[2]/div[1]/div/div[2]/div/div/div/div/span[1]/span/span'
+            xpathStockElementTicker = 
+            allMarketWatchStockElements = self.getAllXpathElements(xpathMarketWatchNames)
+            self.stockElement = next(stockElement_ for stockElement_ in allMarketWatchStockElements if stockElement_.text == stockName)
+            self.stockElementTicker = self.getXpathElement()
+        countIter = 0
+        countOrders = 0
+        while (countIter < self.maxIters and countOrders < self.maxNumOrders):
+            
+            
+            
+            
+            countIter+=1
+
+
+        
+        
+
+        
             
 
 if __name__=="__main__":
     obj = portfolioManager()
     obj.executeLogin()
-    obj.executeOrder()
+    obj.executeOrder(orderType='BUY')
+    obj.executeOrder(orderType='SELL')
     # while True:
     #     a = 5
 
